@@ -1,5 +1,5 @@
 ARG IMAGE=intersystemsdc/iris-community:latest
-FROM $IMAGE 
+FROM $IMAGE
 
 WORKDIR /irisdev/app
 

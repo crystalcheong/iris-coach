@@ -1,6 +1,12 @@
 from grongier.pex import BusinessProcess
+from rag.msg import (
+    ChatClearRequest,
+    ChatRequest,
+    ChatResponse,
+    FileIngestionRequest,
+    VectorSearchRequest,
+)
 
-from rag.msg import ChatRequest, ChatResponse, VectorSearchRequest, ChatClearRequest, FileIngestionRequest
 
 class ChatProcess(BusinessProcess):
     """
@@ -8,6 +14,7 @@ class ChatProcess(BusinessProcess):
     if the vector similarity search returns a document, then we use the document's content as the prompt
     if the vector similarity search returns nothing, then we use the query as the prompt
     """
+
     def on_init(self):
         if not hasattr(self, "target_vector"):
             self.target_vector = "IrisVectorOperation"
@@ -15,8 +22,9 @@ class ChatProcess(BusinessProcess):
             self.target_chat = "ChatOperation"
 
         # prompt template
-        self.prompt_template = "Given the context: \n {context} \n Answer the question: {question}"
-
+        self.prompt_template = (
+            "Given the context: \n {context} \n Answer the question: {question}"
+        )
 
     def ask(self, request: ChatRequest):
         query = request.query
@@ -28,7 +36,7 @@ class ChatProcess(BusinessProcess):
         # if we have a response, then use the first document's content as the prompt
         if response.docs:
             # add each document's content to the context
-            context = "\n".join([doc['page_content'] for doc in response.docs])
+            context = "\n".join([doc["page_content"] for doc in response.docs])
             # build the prompt
             prompt = self.prompt_template.format(context=context, question=query)
         else:

@@ -1,6 +1,6 @@
 {
   "files.associations": {
-    
+
         "Dockerfile*": "dockerfile",
         "iris.script": "objectscript"
       },

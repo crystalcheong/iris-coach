@@ -6,3 +6,5 @@ iris-main.log
 .venv
 waitISC.log
 local_cache/**
+.env
+.idea/

@@ -53,7 +53,7 @@ The grongier.pex module is a module that allows you to do X, Y and Z.
 
 Ok, now it knows what is the grongier.pex module.
 
-But what if we don't know what is the grongier.pex module? How can we give it a prompt that contains the answer? 
+But what if we don't know what is the grongier.pex module? How can we give it a prompt that contains the answer?
 Well, that's where the *knowledge base* comes in.
 
 ![RAG](https://github.com/grongierisc/iris-rag-demo/blob/master/misc/rag_schema.png?raw=true)
@@ -62,7 +62,7 @@ The whole idea of RAG is to use the *knowledge base* to find the **context**, an
 
 To find the **context**, RAG will use a **retriever**. The **retriever** will search the *knowledge base* for the most relevant documents, and then RAG will use the LLM to generate the answer.
 
-To search the *knowledge base*, we will use vector search. 
+To search the *knowledge base*, we will use vector search.
 
 Vector search is a technique that allows to find the most relevant documents given a query. It works by converting the documents and the query into vectors, and then computing the cosine similarity between the query vector and the document vectors. The higher the cosine similarity, the more relevant the document is.
 
@@ -122,7 +122,7 @@ Then the search query in the *knowledge base* (vector database):
 
 ![Message](https://github.com/grongierisc/iris-rag-demo/blob/master/misc/trace_result_vector.png?raw=true)
 
-And finally the new prompt sent to the LLM: 
+And finally the new prompt sent to the LLM:
 
 ![Message](https://github.com/grongierisc/iris-rag-demo/blob/master/misc/trace_new_query.png?raw=true)
 
@@ -422,7 +422,7 @@ class VectorOperation(BusinessOperation):
         docs = self.vector_store.get()
         for id in docs['ids']:
             self.vector_store.delete(id)
-        
+
     def _get_file_type(self, file_path: str):
         if file_path.lower().endswith(".pdf"):
             return "pdf"
@@ -437,14 +437,14 @@ class VectorOperation(BusinessOperation):
         ids = [str(uuid.uuid5(uuid.NAMESPACE_DNS, doc.page_content)) for doc in chunks]
         unique_ids = list(set(ids))
         self.vector_store.add_documents(chunks, ids = unique_ids)
-        
+
     def _ingest_text(self, file_path: str):
         docs = TextLoader(file_path).load()
         chunks = self.text_splitter.split_documents(docs)
         chunks = filter_complex_metadata(chunks)
 
         self._store_chunks(chunks)
-        
+
     def _ingest_pdf(self, file_path: str):
         docs = PyPDFLoader(file_path=file_path).load()
         chunks = self.text_splitter.split_documents(docs)

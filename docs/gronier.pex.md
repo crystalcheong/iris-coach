@@ -40,4 +40,3 @@ CLASSES = {
     'Python.FilterPostRoutingRule': bp.FilterPostRoutingRule,
 }
 ```
-

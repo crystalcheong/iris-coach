@@ -2,7 +2,8 @@ import unittest
 from unittest.mock import MagicMock
 
 from rag.bo import ChatOperation
-from rag.msg import FileIngestionRequest, ChatRequest, ChatClearRequest
+from rag.msg import ChatClearRequest, ChatRequest, FileIngestionRequest
+
 
 class TestChatOperation(unittest.TestCase):
     def setUp(self):
@@ -20,7 +21,9 @@ class TestChatOperation(unittest.TestCase):
 
         response = self.operation.ask(request)
 
-        self.operation.model.assert_called_once_with({"question": "What is the answer?"})
+        self.operation.model.assert_called_once_with(
+            {"question": "What is the answer?"}
+        )
         self.assertEqual(response, "response")
 
     def test_ask_with_rag(self):
@@ -82,6 +85,7 @@ class TestChatOperation(unittest.TestCase):
         self.operation.on_init()
 
         self.operation.ingest(ingestion_request)
+
 
 if __name__ == "__main__":
     unittest.main()

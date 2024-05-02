@@ -82,7 +82,7 @@ cd iris-rag-demo
 docker-compose up
 ```
 
-⚠️ tout est local, rien n'est envoyé dans le cloud, donc soyez patient, cela peut prendre quelques minutes pour démarrer.  
+⚠️ tout est local, rien n'est envoyé dans le cloud, donc soyez patient, cela peut prendre quelques minutes pour démarrer.
 
 ## 1.4. Usage
 
@@ -422,7 +422,7 @@ class VectorOperation(BusinessOperation):
         docs = self.vector_store.get()
         for id in docs['ids']:
             self.vector_store.delete(id)
-        
+
     def _get_file_type(self, file_path: str):
         if file_path.lower().endswith(".pdf"):
             return "pdf"
@@ -437,14 +437,14 @@ class VectorOperation(BusinessOperation):
         ids = [str(uuid.uuid5(uuid.NAMESPACE_DNS, doc.page_content)) for doc in chunks]
         unique_ids = list(set(ids))
         self.vector_store.add_documents(chunks, ids = unique_ids)
-        
+
     def _ingest_text(self, file_path: str):
         docs = TextLoader(file_path).load()
         chunks = self.text_splitter.split_documents(docs)
         chunks = filter_complex_metadata(chunks)
 
         self._store_chunks(chunks)
-        
+
     def _ingest_pdf(self, file_path: str):
         docs = PyPDFLoader(file_path=file_path).load()
         chunks = self.text_splitter.split_documents(docs)

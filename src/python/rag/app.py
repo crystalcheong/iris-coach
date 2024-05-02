@@ -1,10 +1,10 @@
 import os
 import tempfile
 import time
-import streamlit as st
-from streamlit_chat import message
 
+import streamlit as st
 from grongier.pex import Director
+from streamlit_chat import message
 
 _service = Director.create_python_business_service("ChatService")
 
@@ -18,13 +18,16 @@ def display_messages():
 
 
 def process_input():
-    if st.session_state["user_input"] and len(st.session_state["user_input"].strip()) > 0:
+    if (
+        st.session_state["user_input"]
+        and len(st.session_state["user_input"].strip()) > 0
+    ):
         user_text = st.session_state["user_input"].strip()
         with st.spinner(f"Thinking about {user_text}"):
             rag_enabled = False
             if len(st.session_state["file_uploader"]) > 0:
                 rag_enabled = True
-            time.sleep(1) # help the spinner to show up
+            time.sleep(1)  # help the spinner to show up
             agent_text = _service.ask(user_text, rag_enabled)
 
         st.session_state["messages"].append((user_text, True))
@@ -32,9 +35,10 @@ def process_input():
 
 
 def read_and_save_file():
-
     for file in st.session_state["file_uploader"]:
-        with tempfile.NamedTemporaryFile(delete=False,suffix=f".{file.name.split('.')[-1]}") as tf:
+        with tempfile.NamedTemporaryFile(
+            delete=False, suffix=f".{file.name.split('.')[-1]}"
+        ) as tf:
             tf.write(file.getbuffer())
             file_path = tf.name
 
@@ -43,15 +47,12 @@ def read_and_save_file():
         os.remove(file_path)
 
     if len(st.session_state["file_uploader"]) > 0:
-        st.session_state["messages"].append(
-            ("File(s) successfully ingested", False)
-        )
+        st.session_state["messages"].append(("File(s) successfully ingested", False))
 
     if len(st.session_state["file_uploader"]) == 0:
         _service.clear()
-        st.session_state["messages"].append(
-            ("Clearing all data", False)
-        )
+        st.session_state["messages"].append(("Clearing all data", False))
+
 
 def page():
     if len(st.session_state) == 0:

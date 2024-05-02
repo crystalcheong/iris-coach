@@ -1,19 +1,34 @@
+import os
 import uuid
 from typing import Union
-from sqlalchemy import text
+
+from dotenv import load_dotenv
 from grongier.pex import BusinessOperation
-from langchain.vectorstores import Chroma
-from langchain.llms import Ollama
-from langchain.embeddings import FastEmbedEmbeddings
 from langchain.document_loaders import PyPDFLoader, TextLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter, MarkdownHeaderTextSplitter
+from langchain.embeddings import FastEmbedEmbeddings
+from langchain.llms import Ollama
+from langchain.text_splitter import (
+    MarkdownHeaderTextSplitter,
+    RecursiveCharacterTextSplitter,
+)
+from langchain.vectorstores import Chroma
 from langchain.vectorstores.utils import filter_complex_metadata
 from langchain_iris import IRISVector
+from openai import OpenAI
+from rag.msg import (
+    ChatClearRequest,
+    ChatRequest,
+    ChatResponse,
+    FileIngestionRequest,
+    VectorSearchRequest,
+    VectorSearchResponse,
+)
+from sqlalchemy import text
 
-from rag.msg import ChatRequest, ChatClearRequest, FileIngestionRequest, ChatResponse, VectorSearchRequest, VectorSearchResponse
+load_dotenv()
+
 
 class VectorBaseOperation(BusinessOperation):
-
     def __init__(self):
         self.text_splitter = None
         self.vector_store = Union[IRISVector, Chroma]
@@ -42,9 +57,9 @@ class VectorBaseOperation(BusinessOperation):
     def on_tear_down(self):
         docs = self.vector_store.get()
         self.log_info(f"Deleting {len(docs['ids'])} documents")
-        for id in docs['ids']:
+        for id in docs["ids"]:
             self.vector_store.delete(id)
-        
+
     def _get_file_type(self, file_path: str):
         if file_path.lower().endswith(".pdf"):
             return "pdf"
@@ -58,15 +73,15 @@ class VectorBaseOperation(BusinessOperation):
     def _store_chunks(self, chunks):
         ids = [str(uuid.uuid5(uuid.NAMESPACE_DNS, doc.page_content)) for doc in chunks]
         unique_ids = list(set(ids))
-        self.vector_store.add_documents(chunks, ids = unique_ids)
-        
+        self.vector_store.add_documents(chunks, ids=unique_ids)
+
     def _ingest_text(self, file_path: str):
         docs = TextLoader(file_path).load()
         chunks = self.text_splitter.split_documents(docs)
         chunks = filter_complex_metadata(chunks)
 
         self._store_chunks(chunks)
-        
+
     def _ingest_pdf(self, file_path: str):
         docs = PyPDFLoader(file_path=file_path).load()
         chunks = self.text_splitter.split_documents(docs)
@@ -84,7 +99,9 @@ class VectorBaseOperation(BusinessOperation):
             ("##", "Header 2"),
         ]
 
-        markdown_splitter = MarkdownHeaderTextSplitter(headers_to_split_on=headers_to_split_on)
+        markdown_splitter = MarkdownHeaderTextSplitter(
+            headers_to_split_on=headers_to_split_on
+        )
         md_header_splits = markdown_splitter.split_text(docs[0].page_content)
 
         # Split
@@ -93,34 +110,56 @@ class VectorBaseOperation(BusinessOperation):
 
         self._store_chunks(chunks)
 
-class IrisVectorOperation(VectorBaseOperation):
 
+class IrisVectorOperation(VectorBaseOperation):
     def on_init(self):
-        self.text_splitter = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=100)
-        self.vector_store = IRISVector(collection_name="vector",embedding_function=FastEmbedEmbeddings())
+        self.text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=1024, chunk_overlap=100
+        )
+        self.vector_store = IRISVector(
+            collection_name="vector", embedding_function=FastEmbedEmbeddings()
+        )
 
     def on_tear_down(self):
         docs = self.vector_store.get()
         self.log_info(f"Deleting {len(docs['ids'])} documents")
         with self.vector_store._conn.begin():
-            for id in docs['ids']:
-                self.vector_store._conn.execute(text("delete from vector where id = :id"), {"id": id})
-                                     
-class ChromaVectorOperation(VectorBaseOperation):
+            for id in docs["ids"]:
+                self.vector_store._conn.execute(
+                    text("delete from vector where id = :id"), {"id": id}
+                )
 
+
+class ChromaVectorOperation(VectorBaseOperation):
     def on_init(self):
-        self.text_splitter = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=100)
-        self.vector_store = Chroma(collection_name="vector",embedding_function=FastEmbedEmbeddings())
+        self.text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=1024, chunk_overlap=100
+        )
+        self.vector_store = Chroma(
+            collection_name="vector", embedding_function=FastEmbedEmbeddings()
+        )
 
 
 class ChatOperation(BusinessOperation):
-
     def __init__(self):
         self.model = None
 
     def on_init(self):
-        self.model = Ollama(base_url="http://ollama:11434",model="orca-mini")
+        # self.model = Ollama(base_url="http://ollama:11434",model="orca-mini")
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise ValueError(
+                "API Key not found. Please set OPENAI_API_KEY in your .env file."
+            )
+
+        self.model = OpenAI(api_key=api_key)
 
     def ask(self, request: ChatRequest):
-        return ChatResponse(response=self.model(request.query))
-
+        return ChatResponse(
+            response=self.model.chat.completions.create(
+                model="gpt-4-0125-preview",
+                messages=[{"role": "user", "content": request.query}],
+            )
+            .choices[0]
+            .message.content
+        )

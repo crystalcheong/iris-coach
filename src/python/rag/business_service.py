@@ -1,9 +1,8 @@
 from grongier.pex import BusinessService
+from rag.msg import ChatClearRequest, ChatRequest, FileIngestionRequest
 
-from rag.msg import ChatRequest, ChatClearRequest, FileIngestionRequest
 
 class ChatService(BusinessService):
-
     def on_init(self):
         if not hasattr(self, "target"):
             self.target = "ChatProcess"
