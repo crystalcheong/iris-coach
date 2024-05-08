@@ -10,7 +10,7 @@ class FileIngestionRequest(Message):
 
 @dataclass
 class ChatRequest(Message):
-    query: str = ""
+    messages: list = None
 
 
 @dataclass

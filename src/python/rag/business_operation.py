@@ -158,7 +158,31 @@ class ChatOperation(BusinessOperation):
         return ChatResponse(
             response=self.model.chat.completions.create(
                 model="gpt-4-0125-preview",
-                messages=[{"role": "user", "content": request.query}],
+                messages=request.messages,
+            )
+            .choices[0]
+            .message.content
+        )
+
+
+class ScoreOperation(BusinessOperation):
+    def __init__(self):
+        self.model = None
+
+    def on_init(self):
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise ValueError(
+                "API Key not found. Please set OPENAI_API_KEY in your .env file."
+            )
+
+        self.model = OpenAI(api_key=api_key)
+
+    def ask(self, request: ChatRequest):
+        return ChatResponse(
+            response=self.model.chat.completions.create(
+                model="gpt-4-0125-preview",
+                messages=request.messages,
             )
             .choices[0]
             .message.content

@@ -13,9 +13,9 @@ class ChatService(BusinessService):
         # send message
         self.send_request_sync(self.target, msg)
 
-    def ask(self, query: str, rag: bool = False):
+    def ask(self, messages: list, rag: bool = False):
         # build message
-        msg = ChatRequest(query=query)
+        msg = ChatRequest(messages=messages)
         # send message
         response = self.send_request_sync(self.target, msg)
         # return response

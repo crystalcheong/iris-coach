@@ -1,79 +1,51 @@
 import os
 import tempfile
-import time
 
 import streamlit as st
 from grongier.pex import Director
-from streamlit_chat import message
+from streamlit_chat import message as st_message
 
-_service = Director.create_python_business_service("ChatService")
+# Director setup for chat service
+st.session_state.chat_service = Director.create_python_business_service("ChatService")
 
-st.set_page_config(page_title="ChatIRIS")
+st.set_page_config(page_title="ChatIRIS", layout="wide")
 
 
 def display_messages():
-    st.subheader("Chat")
-    for i, (msg, is_user) in enumerate(st.session_state["messages"]):
-        message(msg, is_user=is_user, key=str(i))
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
 
-def process_input():
-    if (
-        st.session_state["user_input"]
-        and len(st.session_state["user_input"].strip()) > 0
-    ):
-        user_text = st.session_state["user_input"].strip()
-        with st.spinner(f"Thinking about {user_text}"):
-            rag_enabled = False
-            if len(st.session_state["file_uploader"]) > 0:
-                rag_enabled = True
-            time.sleep(1)  # help the spinner to show up
-            agent_text = _service.ask(user_text, rag_enabled)
+def process_input(user_input: str):
+    """Process user input, send to chat service, and display response."""
+    if user_input.strip():
+        with st.spinner(f"Thinking about {user_input}..."):
+            rag_enabled = bool(st.session_state.get("file_uploader"))
 
-        st.session_state["messages"].append((user_text, True))
-        st.session_state["messages"].append((agent_text, False))
+            st.session_state.messages.append({"role": "user", "content": user_input})
+            with st.chat_message("user"):
+                st.markdown(user_input)
 
-
-def read_and_save_file():
-    for file in st.session_state["file_uploader"]:
-        with tempfile.NamedTemporaryFile(
-            delete=False, suffix=f".{file.name.split('.')[-1]}"
-        ) as tf:
-            tf.write(file.getbuffer())
-            file_path = tf.name
-
-        with st.spinner(f"Ingesting {file.name}"):
-            _service.ingest(file_path)
-        os.remove(file_path)
-
-    if len(st.session_state["file_uploader"]) > 0:
-        st.session_state["messages"].append(("File(s) successfully ingested", False))
-
-    if len(st.session_state["file_uploader"]) == 0:
-        _service.clear()
-        st.session_state["messages"].append(("Clearing all data", False))
+            response = st.session_state.chat_service.ask(st.session_state.messages, rag_enabled)
+            st.session_state.messages.append({"role": "assistant", "content": response})
+            with st.chat_message("assistant"):
+                st.markdown(response)
 
 
-def page():
-    if len(st.session_state) == 0:
+def setup_page():
+    """Set up page layout and components."""
+    if "messages" not in st.session_state:
         st.session_state["messages"] = []
-        _service.clear()
+        st.session_state.chat_service.clear()
 
-    st.header("ChatIRIS")
-
-    st.subheader("Upload a document")
-    st.file_uploader(
-        "Upload document",
-        type=["pdf", "md", "txt"],
-        key="file_uploader",
-        on_change=read_and_save_file,
-        label_visibility="collapsed",
-        accept_multiple_files=True,
-    )
+    st.title("ChatIRIS")
 
     display_messages()
-    st.text_input("Message", key="user_input", on_change=process_input)
+
+    if prompt := st.chat_input("What's up?"):
+        process_input(prompt)
 
 
 if __name__ == "__main__":
-    page()
+    setup_page()
