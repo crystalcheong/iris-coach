@@ -19,21 +19,39 @@ Our approach disaggregates these concepts into 14 distinct belief scores, allowi
 
 In the context of preventive health actions (e.g. cancer screening, vaccinations), we find that the agent is fairly successful at picking up a person’s beliefs around health actions (e.g. perceived vulnerabilities and barriers). We demonstrate the agent’s capabilities in the specific instance of a colorectal cancer screening campaign.
 
-# Setup
+# 🛠️ Installation and Set Up
+## 1. Clone repository
+  ```bash
+  git clone https://github.com/zacchaeuschok/iris-coach
+  cd iris-coach
+  ```
+> [!IMPORTANT]
+> Duplicate `.env.example` to create `.env` file
+> ```bash
+> cp .env.example .env
+> ```
 
-```
-git clone https://github.com/zacchaeuschok/iris-coach
-cd iris-coach
-cp .env.example .env
-docker-compose up
-```
-⚠️ everything is local, nothing is sent to the cloud, so be patient, it can take a few minutes to start.
+## 2. Run application
+  ```bash
+  docker compose up
+  ```
+> [!NOTE]
+> Everything is local, nothing is sent to the cloud, so be patient, it can take a few minutes to start.
 
 # Usage
 
-Once the setup is completed, you can access the frontend at [localhost:8051](http://localhost:8051) and the management port at [localhost:53795](http://localhost:53795/csp/irisapp/EnsPortal.ProductionConfig.zen?$NAMESPACE=IRISAPP&$NAMESPACE=IRISAPP)
+| First Header  | Second Header |
+| ------------- | ------------- |
+| Frontend  | [localhost:8051](http://localhost:8051)  |
+| Backend  | [http://localhost:8051](http://localhost:53795/csp/irisapp/EnsPortal.ProductionConfig.zen?$NAMESPACE=IRISAPP&$NAMESPACE=IRISAPP)  |
 
+
+## Frontend
 The first page is the chat interface where you can interact with the BABA GPT model. On the sidebar, you may select from a list of FAQs.
+
+## Backend
+![alt text](./misc/trace_query_flow.png)
+
 
 # References
 Gao, Y. (2023, December 18). Retrieval-Augmented Generation for Large Language Models: A survey. arXiv.org. https://arxiv.org/abs/2312.10997
