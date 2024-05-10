@@ -1,5 +1,5 @@
 from grongier.pex import BusinessService
-from rag.msg import ChatClearRequest, ChatRequest, FileIngestionRequest
+from rag.msg import ChatClearRequest, ChatRequest, ChatRetrievalRequest, FileIngestionRequest
 
 
 class ChatService(BusinessService):
@@ -16,7 +16,7 @@ class ChatService(BusinessService):
     def ask(self, messages: list, rag: bool = False):
         # build message
         msg = ChatRequest(messages=messages)
-        # send message
+        # send message to invoke ChatProcess.ask
         response = self.send_request_sync(self.target, msg)
         # return response
         return response.response
@@ -26,3 +26,11 @@ class ChatService(BusinessService):
         msg = ChatClearRequest()
         # send message
         self.send_request_sync(self.target, msg)
+
+    def retrieve(self):
+        # build message
+        msg = ChatRetrievalRequest()
+        # send message
+        response = self.send_request_sync(self.target, msg)
+        # return response
+        return response.messages

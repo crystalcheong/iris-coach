@@ -1,0 +1,16 @@
+{
+  "increase_cure": "early detection yields a higher chance of cure",
+  "increase_lifespan": "health screening improves lifespan and quality of life",
+  "gain_reassurance": "health screening can provide peace of mind",
+  "gain_control": "health screening can give control over their own health",
+  "family_medical_history": "having colorectal cancer in their family’s medical history is a risk factor",
+  "own_medical_history": "personal history of colorectal polyps or inflammatory bowel disease is a risk factor",
+  "risk_factor_exposure": "exposure to lifestyle factors such as eating meat, habit of smoking, excessive use of alcohol, being above 50 years of age are risk factors",
+  "observed_symptoms": "observing symptoms of colorectal cancer is a risk factor",
+  "financial_concerns": "financial concerns should not be a barrier to cancer screening",
+  "discomfort_and_side_effects": "potential discomfort or side effects should not be a barrier to cancer screening",
+  "time_constraints": "time constraints should not be a barrier to cancer screening",
+  "social_embarrassment": "perceived embarrassment or fear of others’ perception should not be a barrier to cancer screening",
+  "tendency_to_deny": "they should not have a tendency to deny their own health issues",
+  "difficult_preparation": "preparation for screening is not difficult"
+}

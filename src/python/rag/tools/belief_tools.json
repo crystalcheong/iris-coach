@@ -1,0 +1,130 @@
+[
+    {
+        "type": "function",
+        "function": {
+            "name": "calculate_incentive_belief_policy",
+            "description": "Calculates the belief policy for incentives. Incentives are the motivating factors and perceived benefits associated with cancer screening.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "increase_cure": {
+                        "type": "number",
+                        "minimum": -1,
+                        "maximum": 1,
+                        "description": "Does the [USER] believe that early detection yields a higher chance of cure? If yes, then score 1. If no, score -1. If the [USER]'s beliefs cannot be determined, score 0."
+                    },
+                    "increase_lifespan": {
+                        "type": "number",
+                        "minimum": -1,
+                        "maximum": 1,
+                        "description": "Does the [USER] believe that health screening improves lifespan and quality of life? If yes, score 1. If no, score -1. If the [USER]'s beliefs cannot be determined, score 0."
+                    },
+                    "gain_reassurance": {
+                        "type": "number",
+                        "minimum": -1,
+                        "maximum": 1,
+                        "description": "Does the [USER] want peace of mind? If yes, score 1. If no, score -1. If the [USER]'s beliefs cannot be determined, score 0."
+                    },
+                    "gain_control": {
+                        "type": "number",
+                        "minimum": -1,
+                        "maximum": 1,
+                        "description": "Does the [USER] want control over their own health? If yes, score 1. If no, score -1. If the [USER]'s beliefs cannot be determined, score 0."
+                    }
+                },
+                "required": [
+                    "increase_cure",
+                    "increase_lifespan",
+                    "gain_reassurance",
+                    "gain_control"
+                ]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "calculate_vulnerability_belief_policy",
+            "description": "Calculates the vulnerability policy. Vulnerabililty is the USER's perception of their susceptibiliity to developing colorectal cancer.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "family_medical_history": {
+                        "type": "number",
+                        "minimum": -1,
+                        "maximum": 1,
+                        "description": "Is the [USER] aware of colorectal cancer in their family’s medical history? If yes, score 1. If no, score -1. If the [USER]'s beliefs cannot be determined, score 0."
+                    },
+                    "own_medical_history": {
+                        "type": "number",
+                        "minimum": -1,
+                        "maximum": 1,
+                        "description": "Is the [USER] aware of a personal history of colorectal polyps or inflammatory bowel disease? If yes, score 1. If no, score -1. If the [USER]'s beliefs cannot be determined, score 0."
+                    },
+                    "risk_factor_exposure": {
+                        "type": "number",
+                        "minimum": -1,
+                        "maximum": 1,
+                        "description": "Is the [USER] aware that they are exposed to risk factors (e.g. eating meat, habit of smoking, excessive use of alcohol, being above 50 years of age)? If yes, score 1. If no, score -1. If the [USER]'s beliefs cannot be determined, score 0."
+                    },
+                    "observed_symptoms": {
+                        "type": "number",
+                        "minimum": -1,
+                        "maximum": 1,
+                        "description": "Has the [USER] observed symptoms of colorectal cancer (e.g. sudden changes in bowel motions, rectal bleeding, incomplete emptying of the bowel, unexplained weight loss, persistent fatigue, lump or pain around anus)? If yes, score 1. If no, score -1. If the [USER]'s beliefs cannot be determined, score 0."
+                    }
+                },
+                "required": ["family_medical_history", "own_medical_history", "risk_factor_exposure", "observed_symptoms"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "calculate_barriers_belief_policy",
+            "description": "Calculates the belief policy for barriers. Barriers represents how convenient cancer screening is, based on whether the USER perceives any obstacles and challenges to be screened.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "financial_concerns": {
+                        "type": "number",
+                        "minimum": -1,
+                        "maximum": 1,
+                        "description": "Does the [USER] perceive financial concerns as a barrier to cancer screening? If yes, score -1. If no, score 1. If the [USER]'s beliefs cannot be determined, score 0."
+                    },
+                    "discomfort_and_side_effects": {
+                        "type": "number",
+                        "minimum": -1,
+                        "maximum": 1,
+                        "description": "Does the [USER] perceive potential discomfort or side effects as a barrier to cancer screening? If yes, score -1. If no, score 1. If the [USER]'s beliefs cannot be determined, score 0."
+                    },
+                    "time_constraints": {
+                        "type": "number",
+                        "minimum": -1,
+                        "maximum": 1,
+                        "description": "Does the [USER] perceive time constraints as a barrier to cancer screening? If yes, score -1. If no, score 1. If the [USER]'s beliefs cannot be determined, score 0."
+                    },
+                    "social_embarrassment": {
+                        "type": "number",
+                        "minimum": -1,
+                        "maximum": 1,
+                        "description": "Does the [USER] perceive embarrassment or fear of others’ perception as a barrier to cancer screening? If yes, score -1. If no, score 1. If the [USER]'s beliefs cannot be determined, score 0."
+                    },
+                    "tendency_to_deny": {
+                        "type": "number",
+                        "minimum": -1,
+                        "maximum": 1,
+                        "description": "Does the [USER] exhibit a tendency to deny their own health issues? If yes, score -1. If no, score 1. If the [USER]'s beliefs cannot be determined, score 0."
+                    },
+                    "difficult_preparation": {
+                        "type": "number",
+                        "minimum": -1,
+                        "maximum": 1,
+                        "description": "Does the [USER] perceive that preparation for screening is difficult? If yes, score -1. If no, score 1. If the [USER]'s beliefs cannot be determined, score 0."
+                    }
+                },
+                "required": ["financial_concerns", "discomfort_and_side_effects", "time_constraints", "social_embarrassment", "tendency_to_deny", "difficult_preparation"]
+            }
+        }
+    }
+]
