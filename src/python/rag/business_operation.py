@@ -1,12 +1,12 @@
 import os
 import uuid
+import json
 from typing import Union
 
 from dotenv import load_dotenv
 from grongier.pex import BusinessOperation
 from langchain.document_loaders import PyPDFLoader, TextLoader
 from langchain.embeddings import FastEmbedEmbeddings
-from langchain.llms import Ollama
 from langchain.text_splitter import (
     MarkdownHeaderTextSplitter,
     RecursiveCharacterTextSplitter,
@@ -19,6 +19,8 @@ from rag.msg import (
     ChatClearRequest,
     ChatRequest,
     ChatResponse,
+    ChatRetrievalRequest,
+    ChatRetrievalResponse,
     FileIngestionRequest,
     VectorSearchRequest,
     VectorSearchResponse,
@@ -27,7 +29,16 @@ from sqlalchemy import text
 
 load_dotenv()
 
+SRC_PATH = "/irisdev/app/src/python/rag"
 
+#*==================== CONSTS ====================#
+MODEL_NAME = "gpt-3.5-turbo-1106"
+# #TODO: as optional param w/ default
+# self.model_name = "gpt-3.5-turbo-1106"
+# # self.model_name = "gpt-4-0125-preview"
+#*==================== CONSTS ====================#
+
+#*==================== VECTORS ====================#
 class VectorBaseOperation(BusinessOperation):
     def __init__(self):
         self.text_splitter = None
@@ -110,8 +121,17 @@ class VectorBaseOperation(BusinessOperation):
 
         self._store_chunks(chunks)
 
-
 class IrisVectorOperation(VectorBaseOperation):
+    #*==================== INIT ====================#
+    #TODO: fallback ingest, parse chunks
+    # #*REF: RAG.py:67/load_documents_and_create_index
+    # # Provides base knowledge to the model
+    # def init_data(self):
+    #     file_path = f"{SRC_PATH}/data/factsheet.pdf"
+    #     ingest_request = FileIngestionRequest(file_path=file_path)
+    #     self.ingest(ingest_request)
+
+
     def on_init(self):
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1024, chunk_overlap=100
@@ -119,6 +139,8 @@ class IrisVectorOperation(VectorBaseOperation):
         self.vector_store = IRISVector(
             collection_name="vector", embedding_function=FastEmbedEmbeddings()
         )
+        # self.init_data()
+    #*==================== INIT ====================#
 
     def on_tear_down(self):
         docs = self.vector_store.get()
@@ -129,7 +151,6 @@ class IrisVectorOperation(VectorBaseOperation):
                     text("delete from vector where id = :id"), {"id": id}
                 )
 
-
 class ChromaVectorOperation(VectorBaseOperation):
     def on_init(self):
         self.text_splitter = RecursiveCharacterTextSplitter(
@@ -138,14 +159,41 @@ class ChromaVectorOperation(VectorBaseOperation):
         self.vector_store = Chroma(
             collection_name="vector", embedding_function=FastEmbedEmbeddings()
         )
-
+#*==================== VECTORS ====================#
 
 class ChatOperation(BusinessOperation):
     def __init__(self):
         self.model = None
+        self.messages = []
+
+    #*==================== INIT ====================#
+    #*REF: Chat.py:22/ChatSession.add_instructions
+    # Provides context to the model
+    def init_system_prompt(self):
+        file_path = f"{SRC_PATH}/prompts/system_prompt.txt"
+        try:
+            with open(file_path, "r") as file:
+                prompt_content = file.read()
+                #* Appends prompt to ChatOperation.messages
+                self.messages.append({"role": "system", "content": prompt_content})
+        except FileNotFoundError:
+            print(f"Error: {file_path} not found.")
+
+
+    #*REF: Chat.py:33/ChatSession.add_initial_message
+    # Entrypoint to interaction with the model
+    def init_initial_prompt(self):
+        file_path = f"{SRC_PATH}/prompts/initial_prompt.txt"
+        try:
+            with open(file_path, "r") as file:
+                prompt_content = file.read()
+                #* Appends prompt to ChatOperation.messages
+                self.messages.append({"role": "assistant", "content": prompt_content})
+
+        except FileNotFoundError:
+            print(f"Error: {file_path} not found.")
 
     def on_init(self):
-        # self.model = Ollama(base_url="http://ollama:11434",model="orca-mini")
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
             raise ValueError(
@@ -153,7 +201,14 @@ class ChatOperation(BusinessOperation):
             )
 
         self.model = OpenAI(api_key=api_key)
+        self.messages = []
 
+        self.init_system_prompt()
+        self.init_initial_prompt()
+    #*==================== INIT ====================#
+
+    #TODO: implement
+    #*REF: Chat.py:89/ChatSession.generate_response
     def ask(self, request: ChatRequest):
         return ChatResponse(
             response=self.model.chat.completions.create(
@@ -163,12 +218,76 @@ class ChatOperation(BusinessOperation):
             .choices[0]
             .message.content
         )
+        # assistant_response = request.messages[-1]["content"]
 
+        # #*REF: Chat.py:97/ChatSession.generate_response
+        # self.messages.append({"role": "assistant", "content": assistant_response})
 
+        # #!: find a way to stream characters one by one (client-side, app.py)
+
+        # return ChatResponse(
+        #     response=self.model.chat.completions.create(
+        #         model=MODEL_NAME,
+        #         messages=self.messages,
+        #     )
+        #     .choices[0]
+        #     .message.content
+        # )
+
+    def retrieve(self, request: ChatRetrievalRequest):
+        return ChatRetrievalResponse(
+            messages=self.messages
+        )
+
+#*REF: Chat.py:100/ScoreAgent
 class ScoreOperation(BusinessOperation):
     def __init__(self):
         self.model = None
 
+    #*==================== INIT ====================#
+    #*REF: Chat.py:111/ScoreAgent.add_tools
+    #*INFO: Serves as a belief system
+    def init_belief_tools(self):
+        belief_tools = []
+        file_path = f"{SRC_PATH}/tools/belief_tools.json"
+        try:
+            with open(file_path, "r") as file:
+                belief_tools = json.load(file)
+                #* Appends prompt to ChatOperation.messages
+                belief_tools = belief_tools
+
+        except FileNotFoundError:
+            print(f"Error: {file_path} not found.")
+
+        return belief_tools
+
+    #*INFO: Initialize round_data with keys and values from last_scores to ensure all keys are present
+    def init_belief_map(self):
+        belief_map = []
+        file_path = f"{SRC_PATH}/tools/belief_map.json"
+        try:
+            with open(file_path, "r") as file:
+                belief_map = json.load(file)
+                #* Appends prompt to ChatOperation.messages
+                belief_map = belief_map
+
+        except FileNotFoundError:
+            print(f"Error: {file_path} not found.")
+
+        return belief_map
+
+    #*REF: Chat.py:116/ScoreAgent.add_instructions
+    # Provides context to the model
+    def init_system_prompt(self):
+        file_path = f"{SRC_PATH}/prompts/belief_prompt.txt"
+        try:
+            with open(file_path, "r") as file:
+                prompt_content = file.read()
+                #* Appends prompt to ScoreOperation.messages
+                self.messages.append({"role": "system", "content": prompt_content})
+        except FileNotFoundError:
+            print(f"Error: {file_path} not found.")
+
     def on_init(self):
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
@@ -177,13 +296,86 @@ class ScoreOperation(BusinessOperation):
             )
 
         self.model = OpenAI(api_key=api_key)
+        self.belief_tools = self.init_belief_tools()
+        self.belief_map = self.init_belief_map()
+        self.belief_prompt = ""
+        self.scores = []
+        self.messages = []
 
+        self.init_system_prompt()
+    #*==================== INIT ====================#
+
+    #*REF: Chat.py:130/ScoreAgent.convert_score_to_text
+    def create_belief_prompt(self, round_data) -> str:
+        self.belief_prompt = "The [SCORING AGENT] evaluated the [USER]'s beliefs and recommend the following: \n"
+
+        for key, value in round_data.items():
+            belief = self.belief_map[key]
+            if value == -1:
+                self.belief_prompt += (
+                    "[ASSISTANT] can help [USER] understand that {}. \n".format(belief)
+                )
+            if value == 1:
+                self.belief_prompt += (
+                    "[ASSISTANT] can affirm [USER]'s belief that {}. \n".format(belief)
+                )
+            if value == 0:
+                self.belief_prompt += "[ASSISTANT] can ask [USER] whether they believe that {}. \n".format(
+                    belief
+                )
+
+        return self.belief_prompt
+
+    #*INFO: Derive the scores, belief prompt from the user's messages
+    #*REF: Chat.py:153/ScoreAgent.generate_response
     def ask(self, request: ChatRequest):
+        # user_query = request.messages[-1]["content"]
+        # self.messages.append({"role": "user", "content": user_query})
+
         return ChatResponse(
             response=self.model.chat.completions.create(
-                model="gpt-4-0125-preview",
+                model=MODEL_NAME,
                 messages=request.messages,
             )
             .choices[0]
             .message.content
         )
+        # response_message = self.model.chat.completions.create(
+        #                 model=MODEL_NAME,
+        #                 messages=request.messages,
+        #                 tools=self.tools,
+        #                 tool_choice="auto",
+        #             ).choices[0].message
+
+        # tool_calls = response_message.tool_calls
+
+        # # Initialize round_data with keys and values from last_scores to ensure all keys are present
+        # round_data = {key: 0 for key in self.belief_map.keys()}
+
+        # # Update round_data with values from tool_calls
+        # if tool_calls:
+        #     for tool_call in tool_calls:
+        #         function_args = json.loads(tool_call.function.arguments)
+        #         round_data.update(function_args)
+
+        # # Fill in zeros in round_data with values from last_scores
+        # if self.scores:
+        #     last_scores = self.scores[-1]
+        #     for key, value in round_data.items():
+        #         if value == 0 and key in last_scores:
+        #             round_data[key] = last_scores[key]
+
+        # # Add the updated round_data to self.scores
+        # self.scores.append(round_data)
+        # # Convert round_data to text recommendations to the Cancer Assistant
+        # self.belief_prompt = self.create_belief_prompt(round_data)
+        # self.messages.append({"role": "assistant", "content": self.belief_prompt})
+
+        # return ChatResponse(
+        #     response=self.model.chat.completions.create(
+        #         model=MODEL_NAME,
+        #         messages=self.messages,
+        #     )
+        #     .choices[0]
+        #     .message.content
+        # )

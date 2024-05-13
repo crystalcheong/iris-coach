@@ -15,5 +15,11 @@ ENV PATH "/home/irisowner/.local/bin:/usr/irissys/bin:/usr/local/sbin:/usr/local
 
 COPY . .
 
-RUN pip3 install -r requirements.txt && \
-    echo 'from langchain.embeddings import FastEmbedEmbeddings; FastEmbedEmbeddings()' | python3
+# Update pip, setuptools, and wheel
+RUN pip3 install --upgrade pip setuptools wheel
+
+# Clear pip cache
+RUN pip3 cache purge
+
+# Install the required Python packages
+RUN pip3 install -r requirements.txt --verbose

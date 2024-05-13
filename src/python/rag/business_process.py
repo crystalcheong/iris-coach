@@ -2,7 +2,7 @@ from grongier.pex import BusinessProcess
 from rag.msg import (
     ChatClearRequest,
     ChatRequest,
-    ChatResponse,
+    ChatRetrievalRequest,
     FileIngestionRequest,
     VectorSearchRequest,
 )
@@ -37,28 +37,44 @@ class ChatProcess(BusinessProcess):
                                      "following snippets to provide an answer. If there are no relevant snippets, " \
                                      "do not assume any context about the user. \n {context}"
 
+    #*REF: Chat.py:74/ChatSession.generate_response
     def ask(self, request: ChatRequest):
+        #*INFO: (1) send user query to score agent
+        #*REF: Chat.py:203
         user_query = request.messages[-1]["content"]
+        chat_request = ChatRequest(messages=request.messages)
+        belief_prompt = self.send_request_sync(self.score_agent, chat_request)
+        #*REF: Chat.py:206 -> Chat.py:81/ChatSession.generate_response
+        if belief_prompt:
+            user_query += "\n" + belief_prompt
+
+        # #*INFO: (2) form retrieval (belief) response
+        # #*REF: Chat.py:74 -> :85/ChatSession._get_retrieval_response
         rag_query = self.rag_query_template.format(query=user_query)
         rag_request = VectorSearchRequest(query=rag_query)
         rag_response = self.send_request_sync(self.target_vector, rag_request)
-
         if rag_response.docs:
             context = "\n".join([doc["page_content"] for doc in rag_response.docs])
             prompt = self.rag_response_template.format(context=context, query=user_query)
         else:
             prompt = user_query
 
+        # #*INFO: (3) send full response to chat agent
         request.messages[-1]["content"] = prompt
         chat_request = ChatRequest(messages=request.messages)
+        # send message to invoke ChatOperation.ask
         chat_response = self.send_request_sync(self.chat_agent, chat_request)
 
         return chat_response
 
     def clear(self, request: ChatClearRequest):
-        # send message
+        # send message to invoke IrisVectorOperation.clear
         self.send_request_sync(self.target_vector, request)
 
     def ingest(self, request: FileIngestionRequest):
-        # send message
+        # send message to invoke IrisVectorOperation.ingest
         self.send_request_sync(self.target_vector, request)
+
+    def retrieve(self, request: ChatRetrievalRequest):
+        # send message
+        return self.send_request_sync(self.chat_agent, request)

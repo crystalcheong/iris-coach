@@ -1,5 +1,6 @@
 from rag.business_operation import (
     ChatOperation,
+    ScoreOperation,
     ChromaVectorOperation,
     IrisVectorOperation,
 )
@@ -9,6 +10,7 @@ from rag.business_service import ChatService
 CLASSES = {
     "Python.ChatService": ChatService,
     "Python.ChatOperation": ChatOperation,
+    "Python.ScoreOperation": ScoreOperation,
     "Python.ChatProcess": ChatProcess,
     "Python.IrisVectorOperation": IrisVectorOperation,
     "Python.ChromaVectorOperation": ChromaVectorOperation,
@@ -41,6 +43,11 @@ PRODUCTIONS = [
                     "@Enabled": "true",
                 },
                 {
+                    "@Name": "ScoreOperation",
+                    "@ClassName": "Python.ScoreOperation",
+                    "@Enabled": "true",
+                },
+                {
                     "@Name": "ChatProcess",
                     "@ClassName": "Python.ChatProcess",
                     "@Enabled": "true",
@@ -48,7 +55,7 @@ PRODUCTIONS = [
                         {
                             "@Target": "Host",
                             "@Name": "%settings",
-                            "#text": "target_vector=IrisVectorOperation\ntarget_chat=ChatOperation",
+                            "#text": "target_vector=IrisVectorOperation\ntarget_chat=ChatOperation\score_agent=ScoreOperation",
                         }
                     ],
                 },

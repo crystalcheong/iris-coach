@@ -31,3 +31,12 @@ class VectorSearchRequest(Message):
 @dataclass
 class VectorSearchResponse(Message):
     docs: list = None
+
+@dataclass
+class ChatRetrievalRequest(Message):
+    pass
+
+@dataclass
+class ChatRetrievalResponse(Message):
+    messages: list = None
+
