@@ -3,10 +3,6 @@ FROM $IMAGE
 
 WORKDIR /irisdev/app
 
-# ENV IRISUSERNAME "SuperUser"
-# ENV IRISPASSWORD "SYS"
-# ENV IRISNAMESPACE "IRISAPP"
-
 # Define args for environment variables
 ARG IRISUSERNAME
 ARG IRISPASSWORD

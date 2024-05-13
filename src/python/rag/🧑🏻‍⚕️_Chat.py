@@ -1,4 +1,6 @@
 import time
+import numpy as np
+import pandas as pd
 import streamlit as st
 from grongier.pex import Director
 
@@ -11,12 +13,19 @@ st.set_page_config(
     layout="wide"
 )
 
+def stream_message(text: str, speed: int):
+    for word in text.split(" "):
+        yield word + " "
+        time.sleep(1 / speed)
+
+
 #*REF: Chat.py:55/ChatSession.display_messages
 def show_messages():
     for message in st.session_state.messages:
         #* Skip system messages (i.e, context prompt)
         if message["role"] == "system":
             continue
+
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
@@ -30,7 +39,7 @@ def process_input(user_input: str):
         with st.chat_message("user"):
             st.markdown(user_input)
 
-        with st.spinner(f"Thinking about {user_input}..."):
+        with st.spinner(f'Thinking about "{user_input}"...'):
             # rag_enabled = bool(st.session_state.get("file_uploader"))
             rag_enabled = True
             #* Output generated belief_prompt from score agent to "assistant"
@@ -39,17 +48,23 @@ def process_input(user_input: str):
             time.sleep(1) # help the spinner to show up
             st.session_state.messages.append({"role": "assistant", "content": response})
             with st.chat_message("assistant"):
-                st.markdown(response)
+                st.write_stream(stream_message(response, speed=10))
 
 def init_session():
     #* Load initial messages
     if "messages" not in st.session_state:
-        st.session_state.chat_service.clear()
-        st.session_state["messages"] = st.session_state.chat_service.retrieve_messages()
+        with st.spinner("Initialising chat session..."):
+            st.session_state.chat_service.clear()
+            st.session_state["messages"] = st.session_state.chat_service.retrieve_messages()
+            time.sleep(1) # help the spinner to show up
+
 
 def clear_session():
-    for key in st.session_state.keys():
-        del st.session_state[key]
+    with st.spinner("Resetting chat session..."):
+        for key in st.session_state.keys():
+            del st.session_state[key]
+
+        time.sleep(1) # help the spinner to show up
 
 def show_faq():
     FAQ_QUESTIONS = {
@@ -70,12 +85,15 @@ def show_faq():
     if selected_faq is not None:
         process_input(selected_faq)
 
+def show_reset_chat():
+    with st.sidebar:
+        st.button('🔄 Reset', on_click=clear_session, use_container_width=True)
+
 def main():
     init_session()
     st.title("🧑🏻‍⚕️ ChatIRIS - CancerScreen")
-    st.button('🔄 Reset', on_click=clear_session)
 
-
+    show_reset_chat()
     show_messages()
     show_faq()
 

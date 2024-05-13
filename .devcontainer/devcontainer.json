@@ -1,10 +1,10 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.224.2/containers/docker-existing-docker-compose
 {
-	"name": "iris-python-template devcontainer",
+	"name": "iris-health-coach devcontainer",
 	// Use the same recipe as creates the container we use when working locally.
 	"dockerComposeFile": [
-		"../docker-compose.yml"
+		"../compose.yml"
 	],
 	"service": "iris",
 	"workspaceFolder": "/irisdev/app",
@@ -20,20 +20,6 @@
 	},
 	"customizations": {
 		"vscode": {
-			// This provides the elements of the connection object which require different values when connecting to the workspace within the container,
-			// versus those in .vscode/settings.json which apply when operating locally on the workspace files.
-			// We define and use a `server` so that (a) a user-level `objectscript.conn.server` properly doesn't override us, and (b) so InterSystems
-			// Server Manager can also be used.
-			"settings": {
-				"objectscript.conn": {
-					"active": true,
-					"ns": "IRISAPP",
-					"host": "localhost",
-					"port": 52773,
-					"username": "SuperUser",
-					"password": "SYS"
-				}
-			},
 			// Add the IDs of extensions we want installed when the container is created.
 			// Currently (March 2022) `intersystems.language-server` fails to run within the container (alpine platform).
 			// Issue is probably https://github.com/intersystems/language-server/issues/185 and/or https://github.com/intersystems/language-server/issues/32
