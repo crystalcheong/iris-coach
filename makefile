@@ -29,6 +29,7 @@ start: compose-build compose-up
 restart:
 	@docker compose restart
 	@docker compose exec iris /docker-entrypoint-initdb.d/init.sh
+kill: docker-prune
 
 # ==============================================================================
 # InterSystems
@@ -38,4 +39,4 @@ restart:
 # ==============================================================================
 
 start-app:
-	@streamlit run src/python/rag/app.py --server.port=8051 --server.address=0.0.0.0
+	@streamlit run src/python/rag/🧑🏻‍⚕️_Chat.py --server.port=8051 --server.address=0.0.0.0

@@ -16,12 +16,16 @@ from langchain.vectorstores.utils import filter_complex_metadata
 from langchain_iris import IRISVector
 from openai import OpenAI
 from rag.msg import (
+    BeliefRetrievalRequest,
+    BeliefRetrievalResponse,
     ChatClearRequest,
     ChatRequest,
     ChatResponse,
     ChatRetrievalRequest,
     ChatRetrievalResponse,
     FileIngestionRequest,
+    ScoreRetrievalRequest,
+    ScoreRetrievalResponse,
     VectorSearchRequest,
     VectorSearchResponse,
 )
@@ -33,7 +37,7 @@ SRC_PATH = "/irisdev/app/src/python/rag"
 
 #*==================== CONSTS ====================#
 MODEL_NAME = "gpt-3.5-turbo-1106"
-# #TODO: as optional param w/ default
+#TODO(refactor): as optional param w/ default (ModelBaseOperation to init OpenAI)
 # self.model_name = "gpt-3.5-turbo-1106"
 # # self.model_name = "gpt-4-0125-preview"
 #*==================== CONSTS ====================#
@@ -123,14 +127,17 @@ class VectorBaseOperation(BusinessOperation):
 
 class IrisVectorOperation(VectorBaseOperation):
     #*==================== INIT ====================#
-    #TODO: fallback ingest, parse chunks
-    # #*REF: RAG.py:67/load_documents_and_create_index
-    # # Provides base knowledge to the model
-    # def init_data(self):
-    #     file_path = f"{SRC_PATH}/data/factsheet.pdf"
-    #     ingest_request = FileIngestionRequest(file_path=file_path)
-    #     self.ingest(ingest_request)
+    #*REF: RAG.py:67/load_documents_and_create_index
+    # Provides base knowledge to the model
+    def init_data(self):
+        file_path = f"{SRC_PATH}/data/factsheet.pdf"
+        if os.path.exists(file_path):
+            self.log_info(f"File exists {file_path}")
 
+            ingest_request =  FileIngestionRequest(file_path=file_path)
+            self.ingest(ingest_request)
+        else:
+            self.log_info(f"File does not exist. {file_path}")
 
     def on_init(self):
         self.text_splitter = RecursiveCharacterTextSplitter(
@@ -139,7 +146,7 @@ class IrisVectorOperation(VectorBaseOperation):
         self.vector_store = IRISVector(
             collection_name="vector", embedding_function=FastEmbedEmbeddings()
         )
-        # self.init_data()
+        self.init_data()
     #*==================== INIT ====================#
 
     def on_tear_down(self):
@@ -150,6 +157,8 @@ class IrisVectorOperation(VectorBaseOperation):
                 self.vector_store._conn.execute(
                     text("delete from vector where id = :id"), {"id": id}
                 )
+
+        self.on_init()
 
 class ChromaVectorOperation(VectorBaseOperation):
     def on_init(self):
@@ -206,35 +215,27 @@ class ChatOperation(BusinessOperation):
         self.init_system_prompt()
         self.init_initial_prompt()
     #*==================== INIT ====================#
+    def clear(self, request: ChatClearRequest):
+        self.on_init()
 
-    #TODO: implement
+    #TODO: implement character streaming (see delta content)
     #*REF: Chat.py:89/ChatSession.generate_response
     def ask(self, request: ChatRequest):
+        assistant_response = request.messages[-1]["content"]
+
+        #*REF: Chat.py:97/ChatSession.generate_response
+        self.messages.append({"role": "assistant", "content": assistant_response})
+
         return ChatResponse(
             response=self.model.chat.completions.create(
-                model="gpt-4-0125-preview",
-                messages=request.messages,
+                model=MODEL_NAME,
+                messages=self.messages,
             )
             .choices[0]
             .message.content
         )
-        # assistant_response = request.messages[-1]["content"]
 
-        # #*REF: Chat.py:97/ChatSession.generate_response
-        # self.messages.append({"role": "assistant", "content": assistant_response})
-
-        # #!: find a way to stream characters one by one (client-side, app.py)
-
-        # return ChatResponse(
-        #     response=self.model.chat.completions.create(
-        #         model=MODEL_NAME,
-        #         messages=self.messages,
-        #     )
-        #     .choices[0]
-        #     .message.content
-        # )
-
-    def retrieve(self, request: ChatRetrievalRequest):
+    def retrieve_messages(self, request: ChatRetrievalRequest):
         return ChatRetrievalResponse(
             messages=self.messages
         )
@@ -263,7 +264,7 @@ class ScoreOperation(BusinessOperation):
 
     #*INFO: Initialize round_data with keys and values from last_scores to ensure all keys are present
     def init_belief_map(self):
-        belief_map = []
+        belief_map = {}
         file_path = f"{SRC_PATH}/tools/belief_map.json"
         try:
             with open(file_path, "r") as file:
@@ -305,6 +306,19 @@ class ScoreOperation(BusinessOperation):
         self.init_system_prompt()
     #*==================== INIT ====================#
 
+    def clear(self, request: ChatClearRequest):
+        self.on_init()
+
+    def retrieve_scores(self, request: ScoreRetrievalRequest):
+        return ScoreRetrievalResponse(
+            scores=self.scores
+        )
+
+    def retrieve_beliefs(self, request: BeliefRetrievalRequest):
+        return BeliefRetrievalResponse(
+            beliefs=self.belief_map
+        )
+
     #*REF: Chat.py:130/ScoreAgent.convert_score_to_text
     def create_belief_prompt(self, round_data) -> str:
         self.belief_prompt = "The [SCORING AGENT] evaluated the [USER]'s beliefs and recommend the following: \n"
@@ -329,53 +343,42 @@ class ScoreOperation(BusinessOperation):
     #*INFO: Derive the scores, belief prompt from the user's messages
     #*REF: Chat.py:153/ScoreAgent.generate_response
     def ask(self, request: ChatRequest):
-        # user_query = request.messages[-1]["content"]
-        # self.messages.append({"role": "user", "content": user_query})
+        response_message = self.model.chat.completions.create(
+                        model=MODEL_NAME,
+                        messages=request.messages,
+                        tools=self.belief_tools,
+                        tool_choice="auto",
+                    ).choices[0].message
+
+        tool_calls = response_message.tool_calls
+
+        # Initialize round_data with keys and values from last_scores to ensure all keys are present
+        round_data = {key: 0 for key in self.belief_map.keys()}
+
+        # Update round_data with values from tool_calls
+        if tool_calls:
+            for tool_call in tool_calls:
+                function_args = json.loads(tool_call.function.arguments)
+                round_data.update(function_args)
+
+        # Fill in zeros in round_data with values from last_scores
+        if self.scores:
+            last_scores = self.scores[-1]
+            for key, value in round_data.items():
+                if value == 0 and key in last_scores:
+                    round_data[key] = last_scores[key]
+
+        # Add the updated round_data to self.scores
+        self.scores.append(round_data)
+        # Convert round_data to text recommendations to the Cancer Assistant
+        self.belief_prompt = self.create_belief_prompt(round_data)
+        self.messages.append({"role": "assistant", "content": self.belief_prompt})
 
         return ChatResponse(
             response=self.model.chat.completions.create(
                 model=MODEL_NAME,
-                messages=request.messages,
+                messages=self.messages,
             )
             .choices[0]
             .message.content
         )
-        # response_message = self.model.chat.completions.create(
-        #                 model=MODEL_NAME,
-        #                 messages=request.messages,
-        #                 tools=self.tools,
-        #                 tool_choice="auto",
-        #             ).choices[0].message
-
-        # tool_calls = response_message.tool_calls
-
-        # # Initialize round_data with keys and values from last_scores to ensure all keys are present
-        # round_data = {key: 0 for key in self.belief_map.keys()}
-
-        # # Update round_data with values from tool_calls
-        # if tool_calls:
-        #     for tool_call in tool_calls:
-        #         function_args = json.loads(tool_call.function.arguments)
-        #         round_data.update(function_args)
-
-        # # Fill in zeros in round_data with values from last_scores
-        # if self.scores:
-        #     last_scores = self.scores[-1]
-        #     for key, value in round_data.items():
-        #         if value == 0 and key in last_scores:
-        #             round_data[key] = last_scores[key]
-
-        # # Add the updated round_data to self.scores
-        # self.scores.append(round_data)
-        # # Convert round_data to text recommendations to the Cancer Assistant
-        # self.belief_prompt = self.create_belief_prompt(round_data)
-        # self.messages.append({"role": "assistant", "content": self.belief_prompt})
-
-        # return ChatResponse(
-        #     response=self.model.chat.completions.create(
-        #         model=MODEL_NAME,
-        #         messages=self.messages,
-        #     )
-        #     .choices[0]
-        #     .message.content
-        # )

@@ -1,10 +1,15 @@
+import time
 import streamlit as st
 from grongier.pex import Director
 
 # Director setup for chat service
 st.session_state.chat_service = Director.create_python_business_service("ChatService")
 
-st.set_page_config(page_title="ChatIRIS", layout="wide")
+st.set_page_config(
+    page_title="ChatIRIS",
+    page_icon="🧑🏻‍⚕️",
+    layout="wide"
+)
 
 #*REF: Chat.py:55/ChatSession.display_messages
 def show_messages():
@@ -19,27 +24,32 @@ def show_messages():
 def process_input(user_input: str):
     """Process user input, send to chat service, and display response."""
     if user_input.strip():
+        #* Add the user's message to session
+        st.session_state.messages.append({"role": "user", "content": user_input})
+        #* Output the user's message
+        with st.chat_message("user"):
+            st.markdown(user_input)
+
         with st.spinner(f"Thinking about {user_input}..."):
-            rag_enabled = bool(st.session_state.get("file_uploader"))
-
-            #* Add the user's message to session
-            st.session_state.messages.append({"role": "user", "content": user_input})
-            #* Output the user's message
-            with st.chat_message("user"):
-                st.markdown(user_input)
-
+            # rag_enabled = bool(st.session_state.get("file_uploader"))
+            rag_enabled = True
             #* Output generated belief_prompt from score agent to "assistant"
             response = st.session_state.chat_service.ask(st.session_state.messages, rag_enabled)
+
+            time.sleep(1) # help the spinner to show up
             st.session_state.messages.append({"role": "assistant", "content": response})
             with st.chat_message("assistant"):
                 st.markdown(response)
-
 
 def init_session():
     #* Load initial messages
     if "messages" not in st.session_state:
         st.session_state.chat_service.clear()
-        st.session_state["messages"] = st.session_state.chat_service.retrieve()
+        st.session_state["messages"] = st.session_state.chat_service.retrieve_messages()
+
+def clear_session():
+    for key in st.session_state.keys():
+        del st.session_state[key]
 
 def show_faq():
     FAQ_QUESTIONS = {
@@ -60,11 +70,11 @@ def show_faq():
     if selected_faq is not None:
         process_input(selected_faq)
 
-
-def setup_page():
+def main():
     init_session()
+    st.title("🧑🏻‍⚕️ ChatIRIS - CancerScreen")
+    st.button('🔄 Reset', on_click=clear_session)
 
-    st.title("ChatIRIS")
 
     show_messages()
     show_faq()
@@ -72,6 +82,5 @@ def setup_page():
     if prompt := st.chat_input("What's up?"):
         process_input(prompt)
 
-
 if __name__ == "__main__":
-    setup_page()
+    main()

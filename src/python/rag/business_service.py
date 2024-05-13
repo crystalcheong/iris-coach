@@ -1,5 +1,5 @@
 from grongier.pex import BusinessService
-from rag.msg import ChatClearRequest, ChatRequest, ChatRetrievalRequest, FileIngestionRequest
+from rag.msg import BeliefRetrievalRequest, ChatClearRequest, ChatRequest, ChatRetrievalRequest, FileIngestionRequest, ScoreRetrievalRequest
 
 
 class ChatService(BusinessService):
@@ -24,13 +24,29 @@ class ChatService(BusinessService):
     def clear(self):
         # build message
         msg = ChatClearRequest()
-        # send message
+        # send message to invoke ChatProcess.clear
         self.send_request_sync(self.target, msg)
 
-    def retrieve(self):
+    def retrieve_messages(self):
         # build message
         msg = ChatRetrievalRequest()
         # send message
         response = self.send_request_sync(self.target, msg)
         # return response
         return response.messages
+
+    def retrieve_scores(self):
+        # build message
+        msg = ScoreRetrievalRequest()
+        # send message
+        response = self.send_request_sync(self.target, msg)
+        # return response
+        return response.scores
+
+    def retrieve_beliefs(self):
+        # build message
+        msg = BeliefRetrievalRequest()
+        # send message
+        response = self.send_request_sync(self.target, msg)
+        # return response
+        return response.beliefs

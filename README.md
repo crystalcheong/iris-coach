@@ -53,6 +53,14 @@ The first page is the chat interface where you can interact with the BABA GPT mo
 ![alt text](./misc/trace_query_flow.png)
 
 
+# Contributors ✨
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/zacchaeuschok" target="_blank"><img src="https://avatars.githubusercontent.com/u/55981443?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Zacchaeus Chok</b></sub></a><br />
+    <td align="center"><a href="https://github.com/crystalcheong"  target="_blank"><img src="https://avatars.githubusercontent.com/u/65748007?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Crystal Cheong</b></sub></a><br /></td>
+  </tr>
+</table>
+
 # References
 Gao, Y. (2023, December 18). Retrieval-Augmented Generation for Large Language Models: A survey. arXiv.org. https://arxiv.org/abs/2312.10997
 
@@ -67,3 +75,5 @@ Reddy, S. (2023). Evaluating large language models for use in healthcare: A fram
 Rosenstock, I. M. (1974). The Health Belief Model and Preventive Health Behavior. Health Education Monographs, 2(4), 354–386. http://www.jstor.org/stable/45240623
 
 X, Y., Chen, M., & Yu, Z. (2023). Prompt-Based Monte-Carlo Tree Search for Goal-oriented Dialogue Policy Planning. ACL Anthology. https://doi.org/10.18653/v1/2023.emnlp-main.439
+
+Grongier. (n.d.). Interoperability embedded Python. GitHub. https://github.com/grongierisc/interoperability-embedded-python

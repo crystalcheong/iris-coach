@@ -7,7 +7,11 @@ from grongier.pex import Director
 # Director setup for chat service
 st.session_state.chat_service = Director.create_python_business_service("ChatService")
 
-#TODO: add default prompts
+st.set_page_config(
+    page_title="ChatIRIS - Agent",
+    page_icon="🤖",
+    layout="wide"
+)
 
 def initialize_session_state():
     if "messages" not in st.session_state:
@@ -55,7 +59,7 @@ def handle_file_upload():
 
 
 def main():
-    st.title("Agent Manager")
+    st.title("🤖 ChatIRIS - Agent Manager")
     initialize_session_state()
 
     #*INFO: upload file for system prompt
@@ -71,7 +75,7 @@ def main():
     # Check if system_prompt content is not an empty string
     is_system_prompt_empty = bool(st.session_state.get("system_prompt", {}).get("content"))
 
-    with st.expander("View Uploaded System Prompt", expanded=is_system_prompt_empty):
+    with st.expander("View System Prompt", expanded=is_system_prompt_empty):
         # Display current system prompt
         st.caption("Current System Prompt")
         st.write(st.session_state.system_prompt["content"])
@@ -95,7 +99,7 @@ def main():
     # Check if system_prompt content is not an empty string
     is_assistant_prompt_empty = bool(st.session_state.get("assistant_prompt", {}).get("content"))
 
-    with st.expander("View Uploaded Assistant Prompt",expanded=is_assistant_prompt_empty):
+    with st.expander("View Assistant Prompt",expanded=is_assistant_prompt_empty):
         # Display assistant system prompt
         st.caption("Current Assistant Prompt")
         st.write(st.session_state.assistant_prompt["content"])
@@ -115,10 +119,6 @@ def main():
         on_change=handle_file_upload,
         accept_multiple_files=True,
     )
-    # with st.expander("View Uploaded Fact Sheet"):
-
-
-
 
     # Save button
     if st.button("Save System Prompt"):

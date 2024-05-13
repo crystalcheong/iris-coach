@@ -40,3 +40,18 @@ class ChatRetrievalRequest(Message):
 class ChatRetrievalResponse(Message):
     messages: list = None
 
+@dataclass
+class ScoreRetrievalRequest(Message):
+    pass
+
+@dataclass
+class ScoreRetrievalResponse(Message):
+    scores: list = None
+
+@dataclass
+class BeliefRetrievalRequest(Message):
+    pass
+
+@dataclass
+class BeliefRetrievalResponse(Message):
+    beliefs: list = None
