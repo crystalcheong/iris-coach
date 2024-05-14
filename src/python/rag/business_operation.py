@@ -30,16 +30,13 @@ from rag.msg import (
     VectorSearchResponse,
 )
 from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError
 
 load_dotenv()
 
-SRC_PATH = "/irisdev/app/src/python/rag"
-
 #*==================== CONSTS ====================#
-MODEL_NAME = "gpt-3.5-turbo-1106"
-#TODO(refactor): as optional param w/ default (ModelBaseOperation to init OpenAI)
-# self.model_name = "gpt-3.5-turbo-1106"
-# # self.model_name = "gpt-4-0125-preview"
+SRC_PATH = "/irisdev/app/src/python/rag"
+MODEL_NAME = "gpt-4-0125-preview"
 #*==================== CONSTS ====================#
 
 #*==================== VECTORS ====================#
@@ -85,10 +82,32 @@ class VectorBaseOperation(BusinessOperation):
         else:
             return "unknown"
 
+    # def _store_chunks(self, chunks):
+    #     ids = [str(uuid.uuid5(uuid.NAMESPACE_DNS, doc.page_content)) for doc in chunks]
+    #     unique_ids = list(set(ids))
+    #     self.vector_store.add_documents(chunks, ids=unique_ids)
+    # def _store_chunks(self, chunks):
+    #     ids = [str(uuid.uuid5(uuid.NAMESPACE_DNS, doc.page_content)) for doc in chunks]
+    #     unique_ids = list(set(ids))
+    #     documents_to_add = [{"id": id, "document": chunk} for id, chunk in zip(unique_ids, chunks)]
+
+    #     for doc in documents_to_add:
+    #         try:
+    #             self.vector_store.add_documents([doc["document"]], ids=[doc["id"]])
+    #         except IntegrityError as e:
+    #             self.log_warning(f"IntegrityError for id {doc['id']}: {e}. Overwriting the existing document.")
+    #             self.vector_store.delete(doc["id"])  # Delete the existing document
+    #             self.vector_store.add_documents([doc["document"]], ids=[doc["id"]])  # Re-insert the document
+
     def _store_chunks(self, chunks):
         ids = [str(uuid.uuid5(uuid.NAMESPACE_DNS, doc.page_content)) for doc in chunks]
         unique_ids = list(set(ids))
-        self.vector_store.add_documents(chunks, ids=unique_ids)
+
+        for chunk, id in zip(chunks, unique_ids):
+            try:
+                self.vector_store.add_documents([chunk], ids=[id])
+            except IntegrityError:
+                self.log_warning(f"Duplicate entry for id {id}, skipping...")
 
     def _ingest_text(self, file_path: str):
         docs = TextLoader(file_path).load()
@@ -218,13 +237,13 @@ class ChatOperation(BusinessOperation):
     def clear(self, request: ChatClearRequest):
         self.on_init()
 
-    #TODO: implement character streaming (see delta content)
     #*REF: Chat.py:89/ChatSession.generate_response
     def ask(self, request: ChatRequest):
         assistant_response = request.messages[-1]["content"]
 
         #*REF: Chat.py:97/ChatSession.generate_response
-        self.messages.append({"role": "assistant", "content": assistant_response})
+        # self.messages.append({"role": "assistant", "content": assistant_response})
+        self.messages.append({"role": "system", "content": assistant_response})
 
         return ChatResponse(
             response=self.model.chat.completions.create(
@@ -372,7 +391,8 @@ class ScoreOperation(BusinessOperation):
         self.scores.append(round_data)
         # Convert round_data to text recommendations to the Cancer Assistant
         self.belief_prompt = self.create_belief_prompt(round_data)
-        self.messages.append({"role": "assistant", "content": self.belief_prompt})
+        # self.messages.append({"role": "assistant", "content": self.belief_prompt})
+        self.messages.append({"role": "system", "content": self.belief_prompt})
 
         return ChatResponse(
             response=self.model.chat.completions.create(

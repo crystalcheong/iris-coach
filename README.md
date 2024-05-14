@@ -6,8 +6,8 @@ One way of sustaining empathetic conversations to drive preventive health action
 
 Early efforts in goal-based dialogue planning are exploring multi-step planning and using Bayesian techniques to adaptively craft goal-driven utterances. However, there are few efforts that explicitly attempt to address the person’s replies at a psychological or empathetic level.
 
-# Belief Aware, Bayes Adaptive GPT Model
-We introduce the Belief-Aware Bayes Adaptive (BABA) GPT, a GPT-4 based agent that leverages the Health Belief Model (Hochbaum, Rosenstock, & Kegels, 1952) as a psychological framework to craft empathetic replies.
+# IRIS Health Coach
+We introduce the IRIS Health Coach, a GPT-4 based agent that leverages the Health Belief Model (Hochbaum, Rosenstock, & Kegels, 1952) as a psychological framework to craft empathetic replies.
 
 <p align="center">
   <img src="./misc/architecture.png" />
@@ -15,7 +15,7 @@ We introduce the Belief-Aware Bayes Adaptive (BABA) GPT, a GPT-4 based agent tha
 
 The Health Belief Model suggests that individual health behaviours are shaped by personal perceptions of vulnerabilities to disease risk, alongside the perceived incentives and barriers to taking action.
 
-Our approach disaggregates these concepts into 14 distinct belief scores, allowing us to dynamically monitor them over the course of the conversation. You can view the belief scores in `tools/belief_scores.json`.
+Our approach disaggregates these concepts into 14 distinct belief scores, allowing us to dynamically monitor them over the course of the conversation. You can view the belief scores in [`tools/belief_tools.json`](src/python/rag/tools/belief_tools.json).
 
 In the context of preventive health actions (e.g. cancer screening, vaccinations), we find that the agent is fairly successful at picking up a person’s beliefs around health actions (e.g. perceived vulnerabilities and barriers). We demonstrate the agent’s capabilities in the specific instance of a colorectal cancer screening campaign.
 
@@ -43,11 +43,11 @@ In the context of preventive health actions (e.g. cancer screening, vaccinations
 | First Header  | Second Header |
 | ------------- | ------------- |
 | Frontend  | [localhost:8051](http://localhost:8051)  |
-| Backend  | [http://localhost:8051](http://localhost:53795/csp/irisapp/EnsPortal.ProductionConfig.zen?$NAMESPACE=IRISAPP&$NAMESPACE=IRISAPP)  |
+| Backend  | [localhost:53795](http://localhost:53795/csp/irisapp/EnsPortal.ProductionConfig.zen?$NAMESPACE=IRISAPP&$NAMESPACE=IRISAPP)  |
 
 
 ## Frontend
-The first page is the chat interface where you can interact with the BABA GPT model. On the sidebar, you may select from a list of FAQs.
+The first page is the chat interface where you can interact with the IRIS Health Coach. On the sidebar, you may select from a list of FAQs.
 
 ## Backend
 ![alt text](./misc/trace_query_flow.png)

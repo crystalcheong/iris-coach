@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 from grongier.pex import Director
+import asyncio
 
 # Director setup for chat service
 st.session_state.chat_service = Director.create_python_business_service("ChatService")
@@ -10,7 +11,8 @@ st.session_state.chat_service = Director.create_python_business_service("ChatSer
 st.set_page_config(
     page_title="ChatIRIS",
     page_icon="🧑🏻‍⚕️",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
 def stream_message(text: str, speed: int):
@@ -28,27 +30,6 @@ def show_messages():
 
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
-
-#*REF: Chat.py:195/run_chat_session
-def process_input(user_input: str):
-    """Process user input, send to chat service, and display response."""
-    if user_input.strip():
-        #* Add the user's message to session
-        st.session_state.messages.append({"role": "user", "content": user_input})
-        #* Output the user's message
-        with st.chat_message("user"):
-            st.markdown(user_input)
-
-        with st.spinner(f'Thinking about "{user_input}"...'):
-            # rag_enabled = bool(st.session_state.get("file_uploader"))
-            rag_enabled = True
-            #* Output generated belief_prompt from score agent to "assistant"
-            response = st.session_state.chat_service.ask(st.session_state.messages, rag_enabled)
-
-            time.sleep(1) # help the spinner to show up
-            st.session_state.messages.append({"role": "assistant", "content": response})
-            with st.chat_message("assistant"):
-                st.write_stream(stream_message(response, speed=10))
 
 def init_session():
     #* Load initial messages
@@ -83,11 +64,47 @@ def show_faq():
                 selected_faq = question
 
     if selected_faq is not None:
-        process_input(selected_faq)
+        handle_user_input(user_input=selected_faq)
 
 def show_reset_chat():
     with st.sidebar:
         st.button('🔄 Reset', on_click=clear_session, use_container_width=True)
+
+async def handle_asst_output():
+    placeholder = st.empty()
+    with placeholder.status(label="Thinking...", expanded=True) as status:
+        st.write("Retrieving relevant information...")
+        # Call the chat service asynchronously to generate the response
+        rag_enabled = True
+        # response = st.session_state.chat_service.ask(st.session_state.messages, rag_enabled)
+        response = await asyncio.to_thread(st.session_state.chat_service.ask, st.session_state.messages, rag_enabled)
+
+        st.write("Generating response...")
+        await asyncio.sleep(0.5) # help the spinner to show up
+
+        status.update(label="Done", state="complete", expanded=False)
+
+    placeholder.empty()
+
+    if response:
+        # Once the response is ready, append it to session state
+        asst_msg = {"role": "assistant", "content": response}
+        st.session_state.messages.append(asst_msg)
+
+        #* Output the user's message
+        asst_chat = st.chat_message(asst_msg["role"])
+        asst_chat.write_stream(stream_message(text=asst_msg["content"], speed=10))
+
+#*REF: Chat.py:195/run_chat_session
+def handle_user_input(user_input:str):
+    user_msg = {"role": "user", "content": user_input}
+    #* Add the user's message to session
+    st.session_state.messages.append(user_msg)
+    #* Output the user's message
+    user_chat = st.chat_message(user_msg["role"])
+    user_chat.markdown(user_msg["content"])
+
+    asyncio.run(handle_asst_output())
 
 def main():
     init_session()
@@ -97,8 +114,9 @@ def main():
     show_messages()
     show_faq()
 
-    if prompt := st.chat_input("What's up?"):
-        process_input(prompt)
+    prompt = st.chat_input("What's up?")
+    if prompt is not None and (user_input := prompt.strip()):
+        handle_user_input(user_input=user_input)
 
 if __name__ == "__main__":
     main()

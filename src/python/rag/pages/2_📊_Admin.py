@@ -12,7 +12,8 @@ st.session_state.chat_service = Director.create_python_business_service("ChatSer
 st.set_page_config(
     page_title="ChatIRIS - Admin",
     page_icon="📊",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
 categories = {
