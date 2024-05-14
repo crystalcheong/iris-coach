@@ -7,7 +7,7 @@ One way of sustaining empathetic conversations to drive preventive health action
 Early efforts in goal-based dialogue planning are exploring multi-step planning and using Bayesian techniques to adaptively craft goal-driven utterances. However, there are few efforts that explicitly attempt to address the person’s replies at a psychological or empathetic level.
 
 # IRIS Health Coach
-We introduce the IRIS Health Coach, a GPT-4 based agent that leverages the Health Belief Model (Hochbaum, Rosenstock, & Kegels, 1952) as a psychological framework to craft empathetic replies.
+We introduce the ChatIRIS Health Coach, a GPT-4 based agent that leverages the Health Belief Model (Hochbaum, Rosenstock, & Kegels, 1952) as a psychological framework to craft empathetic replies.
 
 <p align="center">
   <img src="./misc/architecture.png" />
@@ -47,7 +47,9 @@ In the context of preventive health actions (e.g. cancer screening, vaccinations
 
 
 ## Frontend
-The first page is the chat interface where you can interact with the IRIS Health Coach. On the sidebar, you may select from a list of FAQs.
+The first page is the chat interface where you can interact with the ChatIRIS Health Coach. On the sidebar, you may select from a list of FAQs.
+![frontend-chat](misc/frontend-chat.png)
+![frontend-admin](misc/frontend-admin.png)
 
 ## Backend
 ![alt text](./misc/trace_query_flow.png)
