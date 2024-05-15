@@ -45,8 +45,5 @@ RUN chmod +x $INIT_PATH
 # Switch back to the original user
 USER irisowner
 
-# Start the IRIS instance
-RUN iris start IRIS
-
 # Set the entrypoint to the init.sh script
 ENTRYPOINT ["sh", "-c", "$INIT_PATH"]
