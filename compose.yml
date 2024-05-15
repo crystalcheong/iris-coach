@@ -17,4 +17,4 @@ services:
       - "53773:53773"
     volumes:
       - ./:/irisdev/app:cached
-      - ./init.sh:/docker-entrypoint-initdb.d/init.sh
+    #   - ./init.sh:/docker-entrypoint-initdb.d/init.sh

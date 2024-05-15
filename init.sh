@@ -2,6 +2,8 @@
 
 set -m
 
+iris start iris
+
 iris session iris -U%SYS '##class(Security.Users).UnExpireUserPasswords("*")'
 
 iop --init

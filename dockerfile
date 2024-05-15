@@ -1,3 +1,6 @@
+# ==============================================================================
+# Build stage
+
 ARG IMAGE=intersystemsdc/iris-community:latest
 FROM $IMAGE
 
@@ -28,3 +31,22 @@ RUN pip3 cache purge
 
 # Install the required Python packages
 RUN pip3 install -r requirements.txt --verbose
+
+# ==============================================================================
+# Production stage
+
+ENV INIT_PATH=./init.sh
+# Copy the init script and make it executable
+COPY init.sh $INIT_PATH
+# Switch to root to change permissions
+USER root
+RUN chmod +x $INIT_PATH
+
+# Switch back to the original user
+USER irisowner
+
+# Start the IRIS instance
+RUN iris start IRIS
+
+# Set the entrypoint to the init.sh script
+ENTRYPOINT ["sh", "-c", "$INIT_PATH"]
