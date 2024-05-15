@@ -22,7 +22,7 @@ In the context of preventive health actions (e.g. cancer screening, vaccinations
 # 🛠️ Installation and Set Up
 ## 1. Clone repository
   ```bash
-  git clone https://github.com/zacchaeuschok/iris-coach
+  git clone git@github.com:Marymount-Labs/iris-coach.git
   cd iris-coach
   ```
 > [!IMPORTANT]

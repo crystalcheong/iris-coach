@@ -5,13 +5,8 @@ set -m
 # Start the IRIS instance
 iris start IRIS
 
-# Wait for IRIS to start
-until iris session IRIS -U%SYS -user ${IRISUSERNAME} -password ${IRISPASSWORD} 'write "IRIS is running"' &> /dev/null; do
-  sleep 1
-done
-
 # Unexpire user passwords
-iris session IRIS -U%SYS -user ${IRISUSERNAME} -password ${IRISPASSWORD} '##class(Security.Users).UnExpireUserPasswords("*")'
+iris session iris -U%SYS '##class(Security.Users).UnExpireUserPasswords("*")'
 
 # Run initializations and start services
 iop --init

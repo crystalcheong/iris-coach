@@ -2,7 +2,7 @@
 # Build stage
 
 ARG IMAGE=intersystemsdc/iris-community:latest
-FROM $IMAGE
+FROM --platform=linux/amd64 $IMAGE
 
 WORKDIR /irisdev/app
 
