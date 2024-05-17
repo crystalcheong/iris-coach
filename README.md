@@ -1,3 +1,21 @@
+### Marymount Labs — _ChatIRIS Health Coach_
+
+> Smart health coach to persuade Singaporeans to take preventive health measures<br/>
+>
+> - [💡 Idea](https://ideas.intersystems.com/ideas/DPI-I-560)
+> - [💭 Community Article](https://community.intersystems.com/post/preventive-health-chatiris-integrating-intersystems-iris-enhanced-patient-engagement)
+> - [📦 Exchange Package](https://openexchange.intersystems.com/package/iris-health-coach)
+> - [✨ Presentation](https://youtu.be/nMGaW88ZUJ8) / [Preview](https://youtu.be/cHxjdNddOl4)
+<br/>
+
+<p align="center">
+  <img src="https://github.com/Marymount-Labs/iris-coach/assets/65748007/e9b30767-8d00-402c-8711-8d46f662f8cf" alt="Project Cover"
+    width="960px"
+  />
+</p>
+
+---
+
 # Introduction
 In Singapore, less than 1 in 4 go for annual vaccinations. Only a third of eligible adults are screened for common cancers. Convincing people to be vaccinated or screened for cancer will benefit from a personalised approach, but empathetic conversations are difficult to scale.
 
@@ -7,7 +25,11 @@ One way of sustaining empathetic conversations to drive preventive health action
 Early efforts in goal-based dialogue planning are exploring multi-step planning and using Bayesian techniques to adaptively craft goal-driven utterances. However, there are few efforts that explicitly attempt to address the person’s replies at a psychological or empathetic level.
 
 # IRIS Health Coach
-We introduce the ChatIRIS Health Coach, a GPT-4 based agent that leverages the Health Belief Model (Hochbaum, Rosenstock, & Kegels, 1952) as a psychological framework to craft empathetic replies.
+We introduce the ChatIRIS Health Coach, a [GPT-4]((https://platform.openai.com/docs/models/gpt-4-turbo-and-gpt-4)) based agent that leverages the Health Belief Model (Hochbaum, Rosenstock, & Kegels, 1952) as a psychological framework to craft empathetic replies.
+
+- Framework: [IRIS Interoperability Framework with Embedded Python](https://github.com/grongierisc/interoperability-embedded-python)
+- Vector, RAG: [IRIS Vector Search](https://www.intersystems.com/sg/data-platform/generative-ai/)
+- Model: [OpenAI `gpt-4-0125-preview`](https://platform.openai.com/docs/models/gpt-4-turbo-and-gpt-4)
 
 <p align="center">
   <img src="./misc/architecture.png" />
@@ -48,11 +70,32 @@ In the context of preventive health actions (e.g. cancer screening, vaccinations
 
 ## Frontend
 The first page is the chat interface where you can interact with the ChatIRIS Health Coach. On the sidebar, you may select from a list of FAQs.
-![frontend-chat](misc/frontend-chat.png)
-![frontend-admin](misc/frontend-admin.png)
+
+<details>
+  <summary>🪟 Preview Pages</summary>
+  <br/>
+
+  ### Chat interface
+  ![frontend-chat](misc/frontend-chat.png)
+
+  ### Admin interface
+  ![frontend-admin](misc/frontend-admin.png)
+</details>
 
 ## Backend
-![alt text](./misc/trace_query_flow.png)
+
+Vector Search in RAG pipeline:
+1) [IrisVectorOperation.init_data](https://github.com/Marymount-Labs/iris-coach/blob/6d19ddd37957e035a921170dac02cfbed63cf1c3/src/python/rag/business_operation.py#L151): IRIS Vector store is initialised with the [initial knowledge base](src/python/rag/data/factsheet.pdf)
+2) [ChatProcess.ask](https://github.com/Marymount-Labs/iris-coach/blob/main/src/python/rag/business_process.py#L56-L62): Invoke [VectorSearchRequest](https://github.com/Marymount-Labs/iris-coach/blob/6d19ddd37957e035a921170dac02cfbed63cf1c3/src/python/rag/business_process.py#L56) to retrieve the relevant information from IRIS
+
+Scoring Agent:
+1) [ScoreOperation.on_init](https://github.com/Marymount-Labs/iris-coach/blob/6d19ddd37957e035a921170dac02cfbed63cf1c3/src/python/rag/business_operation.py#L311): Initialise the scoring agent with initial prompt and belief map
+2) [ScoreOperation.ask](https://github.com/Marymount-Labs/iris-coach/blob/6d19ddd37957e035a921170dac02cfbed63cf1c3/src/python/rag/business_operation.py#L375-L391): Calculate user's belief scores based on verbal cues
+2) [ScoreOperation.create_belief_prompt](https://github.com/Marymount-Labs/iris-coach/blob/6d19ddd37957e035a921170dac02cfbed63cf1c3/src/python/rag/business_operation.py#L342): Creates the optimal belief prompt using the user's belief scores
+
+Finally, using the chat history, the belief scores from the scoring agent, and the retrieved context from the RAG pipeline, the conversation model will be able to generate an informed and persuasive response for the user
+
+_Find out more about it in [Preventive Health with ChatIRIS: Integrating InterSystems IRIS for Enhanced Patient Engagement](https://community.intersystems.com/post/preventive-health-chatiris-integrating-intersystems-iris-enhanced-patient-engagement)_
 
 
 # Contributors ✨

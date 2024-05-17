@@ -82,23 +82,6 @@ class VectorBaseOperation(BusinessOperation):
         else:
             return "unknown"
 
-    # def _store_chunks(self, chunks):
-    #     ids = [str(uuid.uuid5(uuid.NAMESPACE_DNS, doc.page_content)) for doc in chunks]
-    #     unique_ids = list(set(ids))
-    #     self.vector_store.add_documents(chunks, ids=unique_ids)
-    # def _store_chunks(self, chunks):
-    #     ids = [str(uuid.uuid5(uuid.NAMESPACE_DNS, doc.page_content)) for doc in chunks]
-    #     unique_ids = list(set(ids))
-    #     documents_to_add = [{"id": id, "document": chunk} for id, chunk in zip(unique_ids, chunks)]
-
-    #     for doc in documents_to_add:
-    #         try:
-    #             self.vector_store.add_documents([doc["document"]], ids=[doc["id"]])
-    #         except IntegrityError as e:
-    #             self.log_warning(f"IntegrityError for id {doc['id']}: {e}. Overwriting the existing document.")
-    #             self.vector_store.delete(doc["id"])  # Delete the existing document
-    #             self.vector_store.add_documents([doc["document"]], ids=[doc["id"]])  # Re-insert the document
-
     def _store_chunks(self, chunks):
         ids = [str(uuid.uuid5(uuid.NAMESPACE_DNS, doc.page_content)) for doc in chunks]
         unique_ids = list(set(ids))
