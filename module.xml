@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Export generator="Cache" version="25">
-  <Document name="iris-python-interop-template.ZPM">
+  <Document name="iris-health-coach.ZPM">
     <Module>
-      <Name>iris-python-interop-template</Name>
-      <Description>An demo package</Description>
+      <Name>iris-health-coach</Name>
+      <Description>Smart health coach to persuade Singaporeans to take preventive health measures</Description>
       <Version>0.0.1</Version>
       <Packaging>module</Packaging>
       <Dependencies>
