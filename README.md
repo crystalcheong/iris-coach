@@ -29,7 +29,7 @@ We introduce the ChatIRIS Health Coach, a [GPT-4]((https://platform.openai.com/d
 
 - Framework: [IRIS Interoperability Framework with Embedded Python](https://github.com/grongierisc/interoperability-embedded-python)
 - Vector, RAG: [IRIS Vector Search](https://www.intersystems.com/sg/data-platform/generative-ai/)
-- Model: [OpenAI `gpt-4-0125-preview`](https://platform.openai.com/docs/models/gpt-4-turbo-and-gpt-4)
+- Model: [OpenAI `gpt-4o`](https://platform.openai.com/docs/models/gpt-4-turbo-and-gpt-4)
 
 <p align="center">
   <img src="./misc/architecture.png" />

@@ -36,7 +36,7 @@ load_dotenv()
 
 #*==================== CONSTS ====================#
 SRC_PATH = "/irisdev/app/src/python/rag"
-MODEL_NAME = "gpt-4-0125-preview"
+MODEL_NAME = "gpt-4o"
 #*==================== CONSTS ====================#
 
 #*==================== VECTORS ====================#
