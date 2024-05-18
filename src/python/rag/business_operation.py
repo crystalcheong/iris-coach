@@ -129,7 +129,6 @@ class VectorBaseOperation(BusinessOperation):
 
 class IrisVectorOperation(VectorBaseOperation):
     #*==================== INIT ====================#
-    #*REF: RAG.py:67/load_documents_and_create_index
     # Provides base knowledge to the model
     def init_data(self):
         file_path = f"{SRC_PATH}/data/factsheet.pdf"
@@ -178,7 +177,6 @@ class ChatOperation(BusinessOperation):
         self.messages = []
 
     #*==================== INIT ====================#
-    #*REF: Chat.py:22/ChatSession.add_instructions
     # Provides context to the model
     def init_system_prompt(self):
         file_path = f"{SRC_PATH}/prompts/system_prompt.txt"
@@ -190,8 +188,6 @@ class ChatOperation(BusinessOperation):
         except FileNotFoundError:
             print(f"Error: {file_path} not found.")
 
-
-    #*REF: Chat.py:33/ChatSession.add_initial_message
     # Entrypoint to interaction with the model
     def init_initial_prompt(self):
         file_path = f"{SRC_PATH}/prompts/initial_prompt.txt"
@@ -220,11 +216,9 @@ class ChatOperation(BusinessOperation):
     def clear(self, request: ChatClearRequest):
         self.on_init()
 
-    #*REF: Chat.py:89/ChatSession.generate_response
     def ask(self, request: ChatRequest):
         assistant_response = request.messages[-1]["content"]
 
-        #*REF: Chat.py:97/ChatSession.generate_response
         # self.messages.append({"role": "assistant", "content": assistant_response})
         self.messages.append({"role": "system", "content": assistant_response})
 
@@ -242,13 +236,11 @@ class ChatOperation(BusinessOperation):
             messages=self.messages
         )
 
-#*REF: Chat.py:100/ScoreAgent
 class ScoreOperation(BusinessOperation):
     def __init__(self):
         self.model = None
 
     #*==================== INIT ====================#
-    #*REF: Chat.py:111/ScoreAgent.add_tools
     #*INFO: Serves as a belief system
     def init_belief_tools(self):
         belief_tools = []
@@ -279,7 +271,6 @@ class ScoreOperation(BusinessOperation):
 
         return belief_map
 
-    #*REF: Chat.py:116/ScoreAgent.add_instructions
     # Provides context to the model
     def init_system_prompt(self):
         file_path = f"{SRC_PATH}/prompts/belief_prompt.txt"
@@ -321,7 +312,6 @@ class ScoreOperation(BusinessOperation):
             beliefs=self.belief_map
         )
 
-    #*REF: Chat.py:130/ScoreAgent.convert_score_to_text
     def create_belief_prompt(self, round_data) -> str:
         self.belief_prompt = "The [SCORING AGENT] evaluated the [USER]'s beliefs and recommend the following: \n"
 
@@ -343,7 +333,6 @@ class ScoreOperation(BusinessOperation):
         return self.belief_prompt
 
     #*INFO: Derive the scores, belief prompt from the user's messages
-    #*REF: Chat.py:153/ScoreAgent.generate_response
     def ask(self, request: ChatRequest):
         response_message = self.model.chat.completions.create(
                         model=MODEL_NAME,

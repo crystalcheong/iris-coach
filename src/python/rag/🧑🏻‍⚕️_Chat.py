@@ -20,8 +20,6 @@ def stream_message(text: str, speed: int):
         yield word + " "
         time.sleep(1 / speed)
 
-
-#*REF: Chat.py:55/ChatSession.display_messages
 def show_messages():
     for message in st.session_state.messages:
         #* Skip system messages (i.e, context prompt)
@@ -95,7 +93,6 @@ async def handle_asst_output():
         asst_chat = st.chat_message(asst_msg["role"])
         asst_chat.write_stream(stream_message(text=asst_msg["content"], speed=10))
 
-#*REF: Chat.py:195/run_chat_session
 def handle_user_input(user_input:str):
     user_msg = {"role": "user", "content": user_input}
     #* Add the user's message to session

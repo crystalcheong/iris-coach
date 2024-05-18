@@ -1,7 +1,8 @@
 # ==============================================================================
 # Build stage
 
-ARG IMAGE=intersystemsdc/iris-community:latest
+# ARG IMAGE=intersystemsdc/iris-community:latest
+ARG IMAGE=intersystemsdc/iris-community:2024.1-zpm
 FROM $IMAGE
 
 WORKDIR /irisdev/app
