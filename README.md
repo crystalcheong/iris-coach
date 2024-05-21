@@ -4,6 +4,7 @@
 >
 > - [💡 Idea](https://ideas.intersystems.com/ideas/DPI-I-560)
 > - [💭 Community Article](https://community.intersystems.com/post/preventive-health-chatiris-integrating-intersystems-iris-enhanced-patient-engagement)
+> - [💭 Technical Community Article](https://community.intersystems.com/post/enhancing-preventive-health-engagement-backend-powering-chatiris-intersystems-iris)
 > - [📦 Exchange Package](https://openexchange.intersystems.com/package/iris-health-coach)
 > - [✨ Presentation](https://youtu.be/nMGaW88ZUJ8) / [Preview](https://youtu.be/cHxjdNddOl4)
 <br/>
@@ -62,7 +63,7 @@ In the context of preventive health actions (e.g. cancer screening, vaccinations
 
 # Usage
 
-| First Header  | Second Header |
+|   |  |
 | ------------- | ------------- |
 | Frontend  | [localhost:8051](http://localhost:8051)  |
 | Backend  | [localhost:53795](http://localhost:53795/csp/irisapp/EnsPortal.ProductionConfig.zen?$NAMESPACE=IRISAPP&$NAMESPACE=IRISAPP)  |
@@ -95,7 +96,7 @@ Scoring Agent:
 
 Finally, using the chat history, the belief scores from the scoring agent, and the retrieved context from the RAG pipeline, the conversation model will be able to generate an informed and persuasive response for the user
 
-_Find out more about it in [Preventive Health with ChatIRIS: Integrating InterSystems IRIS for Enhanced Patient Engagement](https://community.intersystems.com/post/preventive-health-chatiris-integrating-intersystems-iris-enhanced-patient-engagement)_
+_Find out more about it in [Enhancing Preventive Health Engagement: The Backend Powering ChatIRIS with InterSystems IRIS](https://community.intersystems.com/post/enhancing-preventive-health-engagement-backend-powering-chatiris-intersystems-iris)_
 
 
 # Contributors ✨
