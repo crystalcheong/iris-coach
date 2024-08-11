@@ -10,7 +10,7 @@
 <br/>
 
 <p align="center">
-  <img src="https://github.com/Marymount-Labs/iris-coach/assets/65748007/e9b30767-8d00-402c-8711-8d46f662f8cf" alt="Project Cover"
+  <img src="https://github.com/user-attachments/assets/0b7dbdea-de44-43c5-9dec-c515b4cce83d" alt="Project Cover"
     width="960px"
   />
 </p>
